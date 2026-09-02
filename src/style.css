@@ -1,0 +1,115 @@
+/* ============================================================
+   FISINOR Clientes — Identidad gráfica del portal
+   Paleta derivada del logo: azul teal-cian + naranja ADN.
+   Identidad propia del portal (sin frameworks de estilos).
+   ============================================================ */
+
+:root {
+  /* Color */
+  --ink: #0b2740;
+  --ink-soft: #46627a;
+  --ink-faint: #7b93a7;
+  --blue-950: #041d30;
+  --blue-900: #06263e;
+  --blue-700: #0b4a70;
+  --blue-600: #0f5f8f;
+  --teal: #1798b5; /* azul del logo */
+  --teal-bright: #2cb4d3;
+  --teal-soft: #e2f4f8;
+  --orange: #f79e2a; /* naranja del logo */
+  --orange-strong: #e8870f;
+  --orange-soft: #fdead2;
+  --mist: #f3f7fa;
+  --line: #d9e5ee;
+  --white: #ffffff;
+
+  /* Tipografía */
+  --font-display: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Manrope', 'Segoe UI', system-ui, sans-serif;
+
+  /* Forma y profundidad */
+  --radius-lg: 20px;
+  --radius-md: 13px;
+  --radius-sm: 9px;
+  --shadow-soft: 0 10px 30px -18px rgba(6, 38, 62, 0.35);
+  --shadow-lift: 0 18px 44px -20px rgba(6, 38, 62, 0.45);
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--mist);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100dvh;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--orange-strong);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Entrada escalonada de los bloques de la página */
+@keyframes fc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: fc-rise 0.7s var(--ease-out) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
