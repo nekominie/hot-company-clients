@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { fisinorClientsConfig } from '../config/fisinorClientsConfig'
+import { loginClient } from '../services/auth'
 
 const config = fisinorClientsConfig
 const router = useRouter()
@@ -10,10 +11,21 @@ const identifier = ref('')
 const password = ref('')
 const showPassword = ref(false)
 const rememberMe = ref(false)
+const submitting = ref(false)
+const error = ref('')
 
-function onSubmit() {
-  // Placeholder de sesión: navega al panel sin autenticación real (se conectará con la API más adelante).
-  router.push({ name: 'portal-dashboard' })
+async function onSubmit() {
+  if (submitting.value) return
+  submitting.value = true
+  error.value = ''
+  try {
+    await loginClient(identifier.value, password.value)
+    router.push({ name: 'portal-dashboard' })
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : config.login.errorFallback
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -33,7 +45,8 @@ function onSubmit() {
         <p class="auth__subtitle">{{ config.login.subtitle }}</p>
       </div>
 
-      <form class="auth__form reveal" style="--reveal-delay: 140ms" novalidate @submit.prevent="onSubmit">
+      <form class="auth__form reveal" style="--reveal-delay: 140ms" @submit.prevent="onSubmit">
+        <p v-if="error" class="auth__error" role="alert">{{ error }}</p>
         <div class="field">
           <label class="field__label" for="login-identifier">{{ config.login.identifierLabel }}</label>
           <div class="field__control">
@@ -59,6 +72,7 @@ function onSubmit() {
               type="text"
               :placeholder="config.login.identifierPlaceholder"
               autocomplete="username"
+              required
             />
           </div>
         </div>
@@ -93,6 +107,7 @@ function onSubmit() {
               :type="showPassword ? 'text' : 'password'"
               :placeholder="config.login.passwordPlaceholder"
               autocomplete="current-password"
+              required
             />
             <button
               type="button"
@@ -141,8 +156,8 @@ function onSubmit() {
           {{ config.login.rememberLabel }}
         </label>
 
-        <button class="auth__submit" type="submit">
-          {{ config.login.submitLabel }}
+        <button class="auth__submit" type="submit" :disabled="submitting">
+          {{ submitting ? config.login.submittingLabel : config.login.submitLabel }}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -200,6 +215,20 @@ function onSubmit() {
 </template>
 
 <style scoped>
+.auth__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 9px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 10px;
+  background: #fee2e2;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #991b1b;
+}
+
 .auth {
   display: flex;
   align-items: center;

@@ -2,7 +2,8 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { fisinorClientsConfig } from '../../config/fisinorClientsConfig'
-import { portalClient, portalNotices } from '../../mocks/clientPortalData'
+import { portalNotices } from '../../mocks/clientPortalData'
+import { authAccount, displayNameOf, initialsOf, logoutClient } from '../../services/auth'
 
 defineProps<{
   sidebarOpen: boolean
@@ -36,10 +37,14 @@ function onDocumentClick(event: MouseEvent) {
 onMounted(() => document.addEventListener('click', onDocumentClick))
 onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 
-function logout() {
+async function logout() {
   menuOpen.value = false
+  await logoutClient()
   router.push({ name: 'login' })
 }
+
+const displayName = computed(() => displayNameOf(authAccount.value) || 'Suscriptor')
+const displayInitials = computed(() => initialsOf(authAccount.value))
 
 function dismissNotice(id: string) {
   dismissedNotices.value.push(id)
@@ -85,10 +90,10 @@ function dismissNotice(id: string) {
 
       <div class="pf-profile" :class="{ 'pf-profile--open': menuOpen }">
         <button type="button" class="pf-profile__button" @click="toggleMenu">
-          <span class="pf-profile__avatar" aria-hidden="true">{{ portalClient.avatarInitials }}</span>
+          <span class="pf-profile__avatar" aria-hidden="true">{{ displayInitials }}</span>
           <span class="pf-profile__meta">
-            <span class="pf-profile__name">{{ portalClient.representative }}</span>
-            <span class="pf-profile__id">{{ config.portal.header.clientIdLabel }}: {{ portalClient.id }}</span>
+            <span class="pf-profile__name">{{ displayName }}</span>
+            <span class="pf-profile__id">{{ config.portal.header.clientIdLabel }}: {{ authAccount?.username }}</span>
           </span>
           <svg
             class="pf-profile__chevron"
@@ -105,9 +110,9 @@ function dismissNotice(id: string) {
 
         <div v-if="menuOpen" class="pf-profile__menu">
           <div class="pf-profile__menu-header">
-            <span class="pf-profile__menu-name">{{ portalClient.representative }}</span>
-            <span class="pf-profile__menu-business">{{ portalClient.businessName }}</span>
-            <span class="pf-profile__menu-id">{{ config.portal.header.clientIdLabel }}: {{ portalClient.id }}</span>
+            <span class="pf-profile__menu-name">{{ displayName }}</span>
+            <span class="pf-profile__menu-business">{{ authAccount?.email }}</span>
+            <span class="pf-profile__menu-id">{{ config.portal.header.clientIdLabel }}: {{ authAccount?.username }}</span>
           </div>
           <RouterLink
             class="pf-profile__menu-item"

@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { fisinorClientsConfig } from '../config/fisinorClientsConfig'
+import { registerClientAccount } from '../services/auth'
 
 const config = fisinorClientsConfig
+const router = useRouter()
 
 const form = reactive({
   username: '',
   email: '',
+  password: '',
+  confirmPassword: '',
   firstName: '',
   paternalLastname: '',
   maternalLastname: '',
@@ -14,8 +19,36 @@ const form = reactive({
   partnerType: '',
 })
 
-function onSubmit() {
-  // Solo visual; el registro se conectará con la API más adelante.
+const submitting = ref(false)
+const error = ref('')
+
+async function onSubmit() {
+  if (submitting.value) return
+
+  if (form.password !== form.confirmPassword) {
+    error.value = config.register.passwordMismatch
+    return
+  }
+
+  submitting.value = true
+  error.value = ''
+  try {
+    await registerClientAccount({
+      username: form.username,
+      email: form.email,
+      password: form.password,
+      firstName: form.firstName || undefined,
+      lastNamePaternal: form.paternalLastname || undefined,
+      lastNameMaternal: form.maternalLastname || undefined,
+      phone: form.phone || undefined,
+      partnerType: form.partnerType || undefined,
+    })
+    router.push({ name: 'portal-dashboard' })
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : config.register.registerErrorFallback
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 
@@ -35,7 +68,7 @@ function onSubmit() {
         <p class="auth__subtitle">{{ config.register.subtitle }}</p>
       </div>
 
-      <form class="auth__form reveal" style="--reveal-delay: 140ms" @submit.prevent="onSubmit">
+      <form class="auth__form reveal" style="--reveal-delay: 140ms" novalidate @submit.prevent="onSubmit">
         <section class="section" aria-label="Datos de acceso">
           <p class="section__label">{{ config.register.sections.access.label }}</p>
           <div class="section__fields">
@@ -103,6 +136,53 @@ function onSubmit() {
                   required
                 />
               </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="register-password">
+                {{ config.register.fields.password.label }}
+                <span class="field__required" :title="config.register.sections.access.requiredHint" aria-hidden="true">*</span>
+              </label>
+              <div class="field__control">
+                <svg
+                  class="field__icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  aria-hidden="true"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                  />
+                </svg>
+                <input
+                  id="register-password"
+                  v-model="form.password"
+                  class="field__input"
+                  type="password"
+                  :placeholder="config.register.fields.password.placeholder"
+                  autocomplete="new-password"
+                  minlength="8"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="register-confirm">{{ config.register.fields.confirmPassword.label }}</label>
+              <input
+                id="register-confirm"
+                v-model="form.confirmPassword"
+                class="field__input"
+                type="password"
+                :placeholder="config.register.fields.confirmPassword.placeholder"
+                autocomplete="new-password"
+                required
+              />
             </div>
           </div>
         </section>
@@ -194,8 +274,10 @@ function onSubmit() {
           </div>
         </section>
 
-        <button class="auth__submit" type="submit">
-          {{ config.register.submitLabel }}
+        <p v-if="error" class="auth__error" role="alert">{{ error }}</p>
+
+        <button class="auth__submit" type="submit" :disabled="submitting">
+          {{ submitting ? config.register.submittingLabel : config.register.submitLabel }}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -238,6 +320,20 @@ function onSubmit() {
 </template>
 
 <style scoped>
+.auth__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 4px;
+  padding: 9px 12px;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 10px;
+  background: #fee2e2;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #991b1b;
+}
+
 .auth {
   display: flex;
   align-items: center;

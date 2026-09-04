@@ -50,6 +50,8 @@ export interface LoginConfig {
   forgotLabel: string
   forgotHref: string
   submitLabel: string
+  submittingLabel: string
+  errorFallback: string
   createAccount: {
     title: string
     description: string
@@ -86,6 +88,8 @@ export interface RegisterConfig {
   fields: {
     username: RegisterFieldConfig
     email: RegisterFieldConfig
+    password: RegisterFieldConfig
+    confirmPassword: RegisterFieldConfig
     firstName: RegisterFieldConfig
     paternalLastname: RegisterFieldConfig
     maternalLastname: RegisterFieldConfig
@@ -97,6 +101,9 @@ export interface RegisterConfig {
     options: RegisterSelectOptionConfig[]
   }
   submitLabel: string
+  submittingLabel: string
+  passwordMismatch: string
+  registerErrorFallback: string
   termsNote: string
   loginPrompt: string
   loginLinkLabel: string
@@ -273,6 +280,12 @@ export interface PortalConfig {
   }
 }
 
+const clientTypes: RegisterSelectOptionConfig[] = [
+  { value: "private", label: "Cliente Privado" },
+  { value: "government", label: "Cliente Gubernamental" }
+]
+
+
 export const fisinorClientsConfig: FisinorClientsConfig = {
   brand: {
     name: 'FISINOR S.A. de C.V.',
@@ -345,6 +358,8 @@ export const fisinorClientsConfig: FisinorClientsConfig = {
     forgotLabel: '¿Olvidaste tu contraseña?',
     forgotHref: '/recover',
     submitLabel: 'Iniciar sesión',
+    submittingLabel: 'Verificando credenciales...',
+    errorFallback: 'No se pudo iniciar sesión. Intenta de nuevo.',
     createAccount: {
       title: '¿Aún no tienes una cuenta?',
       description: 'Activa tu acceso en línea y administra tus servicios como suscriptor.',
@@ -371,6 +386,8 @@ export const fisinorClientsConfig: FisinorClientsConfig = {
     fields: {
       username: { label: 'Nombre de usuario', placeholder: 'Ej. usuario.fisinor' },
       email: { label: 'Correo electrónico', placeholder: 'nombre@correo.com' },
+      password: { label: 'Contraseña', placeholder: 'Mínimo 8 caracteres' },
+      confirmPassword: { label: 'Confirmar contraseña', placeholder: 'Repite tu contraseña' },
       firstName: { label: 'Nombres', placeholder: 'Ej. María Fernanda' },
       paternalLastname: { label: 'Apellido paterno', placeholder: 'Ej. García' },
       maternalLastname: { label: 'Apellido materno', placeholder: 'Ej. López' },
@@ -379,9 +396,12 @@ export const fisinorClientsConfig: FisinorClientsConfig = {
     partnerType: {
       label: 'Tipo de socio de negocio',
       placeholder: 'Seleccione el tipo de socio',
-      options: [],
+      options: clientTypes,
     },
     submitLabel: 'Crear cuenta',
+    submittingLabel: 'Creando cuenta...',
+    passwordMismatch: 'Las contraseñas no coinciden.',
+    registerErrorFallback: 'No se pudo crear la cuenta. Revisa los datos e intenta de nuevo.',
     termsNote:
       'Al crear tu cuenta aceptas los Términos de Integración y el Aviso de Privacidad Genético de FISINOR.',
     loginPrompt: '¿Ya tienes una cuenta?',
